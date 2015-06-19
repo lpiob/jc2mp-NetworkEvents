@@ -8,26 +8,54 @@ This class implements a bridge between those two classes, allowing cross-module 
 
 Additionaly, NetworkEvents keeps track which submodules handle which events to not flood clients with unnecessary data.
 
-Installation
------------
+## Installation
 
 Drop `client/NetworkEventsClient.lua` and `server/NetworkEvents.lua` to every module that needs to take part in communication. Both classes will be available as `NetworkEvents` instance on both sides.
 
-Usage
------------
-
-Client-side: registering sample handler and allowing it to receive communication from other modules:
+## Usage
+### Broadcasts event from server to all clients designated module(s)
+Server-side:
 ```
-NetworkEvents:Subscribe("SampleHandler")
-Network:Subscribe("SampleHandler", function(args)
+NetworkEvents:Broadcast("EventName", data)
+```
+
+Client-side: register handler as usual, and mark it as allowed to receive events from other modules:
+```
+NetworkEvents:Subscribe("EventName")
+Network:Subscribe("EventName", function(args)
  print("...")
 end)
 ````
 
-Server-side: sending broadcast event to every player and every module that handles this event:
+Data flow: server -> event to other modules => Network:event to designated client-side handler(s)
+
+### Send event from server to specified clients designated module(s)
+
+TBD - WIP
+
+Server-side:
 ```
-NetworkEvents:Broadcast("SampleHandler", "w0t")
+NetworkEvents:Send(player, "EventName", "data")
 ```
 
+Client-side: same as above
 
+Data flow: server -> event to other modules => Network::event to designated client-side handler(s)
+
+### Send event from client to designated modules on server:
+
+TBD - WIP
+
+Client-side:
+```
+NetworkEvents:Send("EventName", data)
+```
+
+Server-side:
+```
+NetworkEvents:Subscribe("EventName") -- register current module as willing to accept events from other modules
+Network:Subscribe("EventName", function(....
+```
+
+Data flow: client -> event to other modules => Network::event to designated server-side handler(s)
 

@@ -9,9 +9,10 @@ function NetworkEventsClient.SendHandler(self,data)
   Network:Send(data.name, data.data)
 end
 
+--- Network:Send replacement, that allows the message to be delivered to
+-- other module(s). Works by transmitting this as event to all modules 
+-- with NetworkEvents script which then retransmit them to server modules
 function NetworkEventsClient.Send(self,name,data)
-  -- @todo check if there are registered event handlers
-  -- send to other modules, server-side
   Events:Fire("NE:Send", {name=name, data=data})
 end
 

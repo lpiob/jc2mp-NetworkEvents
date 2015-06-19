@@ -12,9 +12,20 @@ NetworkEvents.moduleHandlesClientEvents={}
 --- Network::Broadcast replacement, that allows cross-module communication
 -- works by transmitting this as event to all modules with NetworkEvents script
 -- which then retransmit them to clients using NetworkEvents.BroadcastHandler
+-- @todo maybe transmitting first to client-side, and then to willing to handle modules would be faster?
 function NetworkEvents.Broadcast(self,name,data)
   -- send to other modules, server-side
   Events:Fire("NE:Broadcast", {name=name, data=data})
+end
+
+
+--- Network::Send replacement, that allows cross-module communication
+-- works by transmitting this as event to all modules with NetworkEvents script
+-- which then retransmit them to client using NetworkEvents.SendHandler
+-- @todo maybe transmitting first to client-side, and then to willing to handle modules would be faster?
+function NetworkEvents.Send(self,player,name,data)
+  -- send to other modules, server-side
+  Events:Fire("NE:Send", {name=name, data=data})
 end
 
 --- Events::Subscribe replacement, allowing script to register itself as willing
@@ -24,13 +35,23 @@ function NetworkEvents.Subscribe(self, eventName)
 end
 
 
---- Event Handler: Receives Events from other modules and transmit them to 
+--- Event Handler: Receives Broadcast events from other modules and transmit them to 
 -- clients, if any of them is willing to handle
 function NetworkEvents.BroadcastHandler(self,data)
   if not self.moduleHandlesClientEvents[data.name] then 
     return 
   end
   Network:Broadcast(data.name, data.data)
+end
+
+
+--- Event Handler: Receives Send events from other modules and transmit them to 
+-- clients, if any of them is willing to handle
+function NetworkEvents.SendHandler(self,data)
+  if not self.moduleHandlesClientEvents[data.name] then 
+    return 
+  end
+  Network:Broadcast(data.name, data.data) -- @todo direct to one player! @fixme
 end
 
 

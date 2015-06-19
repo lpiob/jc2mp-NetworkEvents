@@ -20,7 +20,7 @@ end
 --- Events::Subscribe replacement, allowing script to register itself as willing
 -- to accept client-server communication for given event name.
 function NetworkEvents.Subscribe(self, eventName)
-  Network:Send("NE:Subscribe", eventName)
+  Network:Broadcast("NE:Subscribe", eventName)
 end
 
 

@@ -30,9 +30,6 @@ end)
 Data flow: server -> event to other modules => Network:event to designated client-side handler(s)
 
 ### Send event from server to specified clients designated module(s)
-
-TBD - WIP
-
 Server-side:
 ```
 NetworkEvents:Send(player, "EventName", "data")

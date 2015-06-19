@@ -2,6 +2,7 @@ class 'NetworkEvents'
 
 function NetworkEvents:__init()
   Events:Subscribe("NE:Broadcast", self, self.BroadcastHandler)
+  Events:Subscribe("NE:Send", self, self.SendHandler)
   Network:Subscribe("NE:Subscribe", self, self.SubscribeHandler)
 end
 
@@ -22,10 +23,15 @@ end
 --- Network::Send replacement, that allows cross-module communication
 -- works by transmitting this as event to all modules with NetworkEvents script
 -- which then retransmit them to client using NetworkEvents.SendHandler
--- @todo maybe transmitting first to client-side, and then to willing to handle modules would be faster?
+-- @link https://github.com/lpiob/jc2mp-NetworkEvents/blob/master/README.md#send-event-from-server-to-specified-clients-designated-modules
 function NetworkEvents.Send(self,player,name,data)
   -- send to other modules, server-side
-  Events:Fire("NE:Send", {name=name, data=data})
+  Events:Fire("NE:Send", {player=player, name=name, data=data})
+  --- This method sends data to other modules first, and then to client-side. If more than one module are designated as
+  -- cross client-server handlers, then the event will be transmitted multiple times.
+  -- This can be eliminated by changing the route and sending data to client-side first, and then to designated modules,
+  -- but it would break compatibility to client-side receiving code i.e. code to receive NetworkEvents::Send would have to
+  -- be different than NetworkEvents::Broadcasts.
 end
 
 --- Events::Subscribe replacement, allowing script to register itself as willing
@@ -35,7 +41,7 @@ function NetworkEvents.Subscribe(self, eventName)
 end
 
 
---- Event Handler: Receives Broadcast events from other modules and transmit them to 
+--- Event Handler: Receives Broadcast events from other modules and transmits them to 
 -- clients, if any of them is willing to handle
 function NetworkEvents.BroadcastHandler(self,data)
   if not self.moduleHandlesClientEvents[data.name] then 
@@ -44,14 +50,16 @@ function NetworkEvents.BroadcastHandler(self,data)
   Network:Broadcast(data.name, data.data)
 end
 
-
---- Event Handler: Receives Send events from other modules and transmit them to 
+--- Event Handler: Receives Send events from other modules and transmits them to 
 -- clients, if any of them is willing to handle
 function NetworkEvents.SendHandler(self,data)
+  if not data.player or not IsValid(data.player) or data.player.__type~="Player" then
+    return
+  end
   if not self.moduleHandlesClientEvents[data.name] then 
     return 
   end
-  Network:Broadcast(data.name, data.data) -- @todo direct to one player! @fixme
+  Network:Send(data.player, data.name, data.data)
 end
 
 

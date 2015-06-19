@@ -1,3 +1,13 @@
+---------------
+-- ## NetworkEvents, cross-module, server<>client communication for JC2MP
+--
+-- Client class.
+--
+-- [Github Page](https://github.com/lpiob/jc2mp-NetworkEvents)
+--
+-- @author Lukasz Biegaj
+-- @copyright 2015
+
 class 'NetworkEventsClient'
 
 function NetworkEventsClient:__init()
